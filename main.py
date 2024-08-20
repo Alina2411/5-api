@@ -1,7 +1,7 @@
-import requests
-from terminaltables import AsciiTable
-from itertools import count
 import os
+import requests
+from itertools import count
+from terminaltables import AsciiTable
 from dotenv import load_dotenv
 
 
@@ -64,12 +64,14 @@ def get_vacancies_sj(sj_secret_key, language="Python", page=0):
     url_sj = 'https://api.superjob.ru/2.0/vacancies/'
 
     headers = {'X-Api-App-Id': sj_secret_key}
+    period = 30
+    catalogues = 48
     params = {
         'keyword': language,
         'town': "Moscow",
         'page': page,
-        'period': 30,
-        'catalogues': 48,
+        'period': period,
+        'catalogues': catalogues,
     }
 
     response = requests.get(url_sj, headers=headers, params=params)
@@ -87,7 +89,7 @@ def get_statistic_vacancies_sj(sj_secret_key):
     ]
     for language in languages:
 
-        salary_by_vacancies_sj = []
+        salaries_by_vacancies_sj = []
         for page in count(0, 1):
             vacancies_superjob = get_vacancies_sj(sj_secret_key,
                                                   language,
@@ -101,18 +103,18 @@ def get_statistic_vacancies_sj(sj_secret_key):
                     vacancy.get('payment_from'), vacancy.get('payment_to'))
 
                 if predicted_salary:
-                    salary_by_vacancies_sj.append(predicted_salary)
+                    salaries_by_vacancies_sj.append(predicted_salary)
 
         total_vacancies_sj = vacancies_superjob['total']
         average_salary = None
 
-        if salary_by_vacancies_sj:
+        if salaries_by_vacancies_sj:
             average_salary = int(
-                sum(salary_by_vacancies_sj) / len(salary_by_vacancies_sj))
+                sum(salaries_by_vacancies_sj) / len(salaries_by_vacancies_sj))
 
         vacancies_by_language[language] = {
             'vacancies_found': total_vacancies_sj,
-            'vacancies_processed': len(salary_by_vacancies_sj),
+            'vacancies_processed': len(salaries_by_vacancies_sj),
             'average_salary': average_salary
         }
 
